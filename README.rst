@@ -13,7 +13,7 @@ Install
     
     go get github.com/Duroktar/trabWatcher
     
-That should place a `watcher` executable into $GOPATH/bin
+That should place a `trabWatcher` executable into $GOPATH/bin
 
 
 Usage
@@ -27,7 +27,7 @@ These assume you are already in the desired working directory.
 
 .. code-block:: fish
 
-    watcher "go run main.go" main.go
+    trabWatcher "go run main.go" main.go
 
 
 - More advanced with Wildcards
@@ -36,13 +36,13 @@ These assume you are already in the desired working directory.
 
     # golang
     set a "go run" *.go
-    watcher "$a" *.go
+    trabWatcher "$a" *.go
 
     # python
-    watcher "python script.py" *.py
+    trabWatcher "python script.py" *.py
 
     # watch all files
-    watcher "python script.py" *.*
+    trabWatcher "python script.py" *.*
 
 
 Copyright & License
