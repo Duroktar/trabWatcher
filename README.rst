@@ -13,9 +13,9 @@ Clone into `$GOPATH/src/github.com/Duroktar/watcher` then run..
 
 .. code-block:: fish
     
-    go install github.com/Duroktar/watcher
+    go get github.com/Duroktar/trabWatcher
     
-That should place watcher into $GOPATH/bin
+That should place a `watcher` executable into $GOPATH/bin
 
 
 Usage
