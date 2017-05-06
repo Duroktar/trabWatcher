@@ -9,8 +9,6 @@ Runs a command whenever a watched file changes.
 Install
 -------
 
-Clone into `$GOPATH/src/github.com/Duroktar/watcher` then run..
-
 .. code-block:: fish
     
     go get github.com/Duroktar/trabWatcher
