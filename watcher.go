@@ -57,6 +57,13 @@ func (w watcher) start() {
 	}
 }
 
+func (w watcher) stop() {
+	if &w.process != nil {
+		return
+	}
+	w.killProcess()
+}
+
 func (w watcher) checkFiles() {
 	for _, target := range w.Targets {
 		modTime, err := lastModified(target)
@@ -70,9 +77,7 @@ func (w watcher) checkFiles() {
 }
 
 func (w watcher) spawnProcess() {
-	if &w.process == nil {
-		w.killProcess()
-	}
+	w.stop()
 	w.getLastModifiedTimes()
 	cmd, err := launchCommand(w.Command)
 	if err != nil {
@@ -102,13 +107,14 @@ func (w watcher) killProcess() {
 	}
 }
 
-func handleCtrlC(c chan os.Signal) {
+func handleCtrlC(c chan os.Signal, w *watcher) {
 	sig := <-c
 	if sig != os.Interrupt {
 		return
 	}
 	fmt.Println(aurora.Green("\rSignal: "), sig)
 	fmt.Println(aurora.Magenta("Goodbye"))
+	w.stop()
 	os.Exit(0)
 }
 
@@ -117,7 +123,9 @@ func main() {
 
 	c := make(chan os.Signal)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
-	go handleCtrlC(c)
 
-	newWatcher(os.Args[1], os.Args[2:]).start()
+	w := newWatcher(os.Args[1], os.Args[2:])
+	go handleCtrlC(c, w)
+
+	w.start()
 }
