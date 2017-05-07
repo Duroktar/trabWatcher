@@ -1,12 +1,10 @@
-package main
+package watcher
 
 import (
 	"fmt"
 	"os"
 	"os/exec"
-	"os/signal"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/logrusorgru/aurora"
@@ -29,9 +27,9 @@ func launchCommand(command string) (*exec.Cmd, error) {
 	return cmd, cmd.Run()
 }
 
-// newWatcher runs given cmd when any file given in watched changes
-func newWatcher(cmd string, watched []string) *watcher {
-	var w watcher
+// NewWatcher runs given cmd when any file given in watched changes
+func NewWatcher(cmd string, watched []string) *Watcher {
+	var w Watcher
 	w.modTimes = make(map[string]string)
 	w.Targets = watched
 	w.Command = cmd
@@ -39,8 +37,8 @@ func newWatcher(cmd string, watched []string) *watcher {
 	return &w
 }
 
-// watcher object
-type watcher struct {
+// Watcher object
+type Watcher struct {
 	Command  string
 	Targets  []string
 	process  *exec.Cmd
@@ -48,8 +46,8 @@ type watcher struct {
 	tick     int
 }
 
-// start the watcher
-func (w watcher) start() {
+// Start the Watcher
+func (w Watcher) Start() {
 	w.spawnProcess()
 	for {
 		w.checkFiles()
@@ -57,14 +55,15 @@ func (w watcher) start() {
 	}
 }
 
-func (w watcher) stop() {
+// Stop the Watcher
+func (w Watcher) Stop() {
 	if &w.process != nil {
 		return
 	}
 	w.killProcess()
 }
 
-func (w watcher) checkFiles() {
+func (w Watcher) checkFiles() {
 	for _, target := range w.Targets {
 		modTime, err := lastModified(target)
 		if err != nil {
@@ -76,8 +75,8 @@ func (w watcher) checkFiles() {
 	}
 }
 
-func (w watcher) spawnProcess() {
-	w.stop()
+func (w Watcher) spawnProcess() {
+	w.Stop()
 	w.getLastModifiedTimes()
 	cmd, err := launchCommand(w.Command)
 	if err != nil {
@@ -86,7 +85,7 @@ func (w watcher) spawnProcess() {
 	w.process = cmd
 }
 
-func (w watcher) getLastModifiedTimes() {
+func (w Watcher) getLastModifiedTimes() {
 	for _, target := range w.Targets {
 		modTime, err := lastModified(target)
 		if err != nil {
@@ -97,7 +96,7 @@ func (w watcher) getLastModifiedTimes() {
 	}
 }
 
-func (w watcher) killProcess() {
+func (w Watcher) killProcess() {
 	if w.process.ProcessState.Exited() {
 		return
 	}
@@ -105,27 +104,4 @@ func (w watcher) killProcess() {
 	if err != nil {
 		panic(err)
 	}
-}
-
-func handleCtrlC(c chan os.Signal, w *watcher) {
-	sig := <-c
-	if sig != os.Interrupt {
-		return
-	}
-	fmt.Println(aurora.Green("\rSignal: "), sig)
-	fmt.Println(aurora.Magenta("Goodbye"))
-	w.stop()
-	os.Exit(0)
-}
-
-func main() {
-	fmt.Println(aurora.Magenta("Starting watcher."))
-
-	c := make(chan os.Signal)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
-
-	w := newWatcher(os.Args[1], os.Args[2:])
-	go handleCtrlC(c, w)
-
-	w.start()
 }
