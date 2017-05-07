@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/signal"
@@ -21,14 +22,26 @@ func handleCtrlC(c chan os.Signal, w *watcher.Watcher) {
 	os.Exit(0)
 }
 
+func handleArgs() (string, []string, error) {
+	if len(os.Args) < 3 {
+		return "", nil, errors.New("Not enough args")
+	}
+	return os.Args[1], os.Args[2:], nil
+}
+
 func main() {
-	fmt.Println(aurora.Magenta("Starting watcher."))
+	command, files, err := handleArgs()
+	if err != nil {
+		fmt.Println(aurora.Red("usage: trabWatcher \"command\" [files]").Bold())
+		os.Exit(1)
+	}
 
 	c := make(chan os.Signal)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
 
-	w := watcher.NewWatcher(os.Args[1], os.Args[2:])
+	w := watcher.NewWatcher(command, files)
 	go handleCtrlC(c, w)
 
+	fmt.Println(aurora.Magenta("Starting watcher."))
 	w.Start()
 }
