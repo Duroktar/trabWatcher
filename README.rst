@@ -50,11 +50,11 @@ TODO
 
 Here's a rundown of suggestions_ from the golang community on reddit. I'll mark em off as I get to em. Thanks!
 
-- Refactor exports (variables/functions/etc..)
-- Prefer short-cicuiting inside of functions to keep indents lean.
+- **DONE** Refactor exports (variables/functions/etc..)
+- **DONE** Prefer short-cicuiting inside of functions to keep indents lean.
 - I don't think I'll use fsnotify as suggested, because it would probably replace the whole Watcher class and this is more or less just for a first project kinda thing. I will be taking a few points from their implementation however. 
 - Put a stop method on watcher
-- It was suggested I put watcher in a seperate package.. But I think I'll end up just put it back in main.go. I don't plan on anyone using this *too* seriously and it seems like the way to go for something intended to be used as a binary (correct me if I'm wrong). 
+- **DONE** It was suggested I put watcher in a seperate package.. But I think I'll end up just put it back in main.go. I don't plan on anyone using this *too* seriously and it seems like the way to go for something intended to be used as a binary (correct me if I'm wrong). 
 - Comments. More of em.
 - Get feedback, learn and move on. There are *many* tools already in the wild that can do this sort of thing and I'd rather not dwell.
 

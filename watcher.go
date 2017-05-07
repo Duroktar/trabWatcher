@@ -29,9 +29,9 @@ func launchCommand(command string) (*exec.Cmd, error) {
 	return cmd, cmd.Run()
 }
 
-// NewWatcher runs given cmd when any file given in watched changes
-func NewWatcher(cmd string, watched []string) *Watcher {
-	var w Watcher
+// newWatcher runs given cmd when any file given in watched changes
+func newWatcher(cmd string, watched []string) *watcher {
+	var w watcher
 	w.modTimes = make(map[string]string)
 	w.Targets = watched
 	w.Command = cmd
@@ -39,8 +39,8 @@ func NewWatcher(cmd string, watched []string) *Watcher {
 	return &w
 }
 
-// Watcher object
-type Watcher struct {
+// watcher object
+type watcher struct {
 	Command  string
 	Targets  []string
 	process  *exec.Cmd
@@ -48,8 +48,8 @@ type Watcher struct {
 	tick     int
 }
 
-// Start the watcher
-func (w Watcher) Start() {
+// start the watcher
+func (w watcher) start() {
 	w.spawnProcess()
 	for {
 		w.checkFiles()
@@ -57,12 +57,7 @@ func (w Watcher) Start() {
 	}
 }
 
-// SetTick sets how often in seconds files are checked for changes
-func (w Watcher) SetTick(rate int) {
-	w.tick = rate
-}
-
-func (w Watcher) checkFiles() {
+func (w watcher) checkFiles() {
 	for _, target := range w.Targets {
 		modTime, err := lastModified(target)
 		if err != nil {
@@ -74,47 +69,61 @@ func (w Watcher) checkFiles() {
 	}
 }
 
-func (w Watcher) spawnProcess() {
+func (w watcher) spawnProcess() {
 	if &w.process == nil {
 		w.killProcess()
 	}
 	w.getLastModifiedTimes()
 	cmd, err := launchCommand(w.Command)
-	// if err != nil {
-	// fmt.Println(aurora.Red("Error executing command").Bold())
-	// panic(err)
-	// }
-	if err == nil {
-		w.process = cmd
+	if err != nil {
+		return
 	}
+	w.process = cmd
 }
 
-func (w Watcher) getLastModifiedTimes() {
+func (w watcher) getLastModifiedTimes() {
 	for _, target := range w.Targets {
 		modTime, err := lastModified(target)
 		if err != nil {
 			fmt.Println(aurora.Red("Error initializing.").Bold())
+			continue
 		}
 		w.modTimes[target] = modTime
 	}
 }
 
-func (w Watcher) killProcess() {
+func (w watcher) killProcess() {
+<<<<<<< HEAD
+<<<<<<< HEAD
 	if w.process.ProcessState.Exited() != true {
 		err := w.process.Process.Kill()
 		if err != nil {
 			panic(err)
 		}
+=======
+=======
+>>>>>>> todo-prefer-shortcircuiting
+	if w.process.ProcessState.Exited() {
+		return
+	}
+	err := w.process.Process.Kill()
+	if err != nil {
+		panic(err)
+<<<<<<< HEAD
+>>>>>>> todo-prefer-shortcircuiting
+=======
+>>>>>>> todo-prefer-shortcircuiting
 	}
 }
 
 func handleCtrlC(c chan os.Signal) {
 	sig := <-c
-	fmt.Println(aurora.Green("\rSignal: "), sig)
-	if sig == os.Interrupt {
-		fmt.Println(aurora.Magenta("\rGoodbye"))
-		os.Exit(0)
+	if sig != os.Interrupt {
+		return
 	}
+	fmt.Println(aurora.Green("\rSignal: "), sig)
+	fmt.Println(aurora.Magenta("Goodbye"))
+	os.Exit(0)
 }
 
 func main() {
@@ -124,5 +133,5 @@ func main() {
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
 	go handleCtrlC(c)
 
-	NewWatcher(os.Args[1], os.Args[2:]).Start()
+	newWatcher(os.Args[1], os.Args[2:]).start()
 }
