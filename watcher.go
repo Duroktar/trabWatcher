@@ -75,13 +75,10 @@ func (w watcher) spawnProcess() {
 	}
 	w.getLastModifiedTimes()
 	cmd, err := launchCommand(w.Command)
-	// if err != nil {
-	// fmt.Println(aurora.Red("Error executing command").Bold())
-	// panic(err)
-	// }
-	if err == nil {
-		w.process = cmd
+	if err != nil {
+		return
 	}
+	w.process = cmd
 }
 
 func (w watcher) getLastModifiedTimes() {
@@ -89,27 +86,30 @@ func (w watcher) getLastModifiedTimes() {
 		modTime, err := lastModified(target)
 		if err != nil {
 			fmt.Println(aurora.Red("Error initializing.").Bold())
+			continue
 		}
 		w.modTimes[target] = modTime
 	}
 }
 
 func (w watcher) killProcess() {
-	if w.process.ProcessState.Exited() != true {
-		err := w.process.Process.Kill()
-		if err != nil {
-			panic(err)
-		}
+	if w.process.ProcessState.Exited() {
+		return
+	}
+	err := w.process.Process.Kill()
+	if err != nil {
+		panic(err)
 	}
 }
 
 func handleCtrlC(c chan os.Signal) {
 	sig := <-c
-	fmt.Println(aurora.Green("\rSignal: "), sig)
-	if sig == os.Interrupt {
-		fmt.Println(aurora.Magenta("\rGoodbye"))
-		os.Exit(0)
+	if sig != os.Interrupt {
+		return
 	}
+	fmt.Println(aurora.Green("\rSignal: "), sig)
+	fmt.Println(aurora.Magenta("Goodbye"))
+	os.Exit(0)
 }
 
 func main() {
