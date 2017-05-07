@@ -93,26 +93,12 @@ func (w watcher) getLastModifiedTimes() {
 }
 
 func (w watcher) killProcess() {
-<<<<<<< HEAD
-<<<<<<< HEAD
-	if w.process.ProcessState.Exited() != true {
-		err := w.process.Process.Kill()
-		if err != nil {
-			panic(err)
-		}
-=======
-=======
->>>>>>> todo-prefer-shortcircuiting
 	if w.process.ProcessState.Exited() {
 		return
 	}
 	err := w.process.Process.Kill()
 	if err != nil {
 		panic(err)
-<<<<<<< HEAD
->>>>>>> todo-prefer-shortcircuiting
-=======
->>>>>>> todo-prefer-shortcircuiting
 	}
 }
 
